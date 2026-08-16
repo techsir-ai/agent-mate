@@ -17,26 +17,26 @@
 ## 三、技术栈(总则)
 
 - Rust + Tauri 构 GUI(不用 Node/Python 承载,避免"鸡用蛋"自举困境)。
-- 进程内终端(`xterm.js + portable-pty`,Windows 走 ConPTY)作为通用组件,技术选型见第五章。第四章各功能模块只复用该通用组件,不各自内置终端。
+- xterm.js + portable-pty(Windows 走 ConPTY),调用系统 shell。
 - 原子化设计为根本:有复用价值的能力独立成可复用模块,接口隔离、保护已测功能。
 - 首发 Windows,架构预留三端(三端适配列下一版本)。
 
 ## 四、功能模块
 
-功能模块按下述顺序排列。每个功能模块均设状态指示灯;「必须前置 / 参考可选」分类在 4.4.1 统一定义,各模块只标注自身归属,不再重复解释:
+功能模块按下述顺序排列。每个功能模块均设状态指示灯:
 
-- **绿灯** 该项已具备且 dsh 可用。
-- **红灯** 必须前置项,缺失阻塞 dsh 部署(如 Node.js)。
-- **参考/可选提示项** 仅提示有无,缺失不阻塞 dsh(如 Git)。
-- 探测均为后台静默进行,不作"点击才检测"的报告式监测。
+- **绿灯** = 该项已具备且 dsh 可用。
+- **必须前置项**:缺了会阻塞 dsh 部署(红灯需处理)→ 如 Node.js(dsh 硬前置,缺了不可用)。
+- **参考/可选提示项**:仅提示有无,缺失不阻塞 dsh → 如 Git(非 dsh 前置,仅提示)。
+- 探测为后台静默进行,不作"点击才检测"的报告式监测。
 
 ### 4.1 网络环境
 
-- 统一管理所有联网操作所依赖的源(node 下载、npm、github 等),处理国内网络访问。
+- 统一管理所有联网操作所依赖的源(nodejs 下载、npm、github 等),处理国内网络访问。
 - 订阅式多源:维护一个固定 URL 的公共仓库列表;从固定 URL 读取各仓库的源列表,再拉到本机。
 - 对每个源做延迟 + 带宽测试;用户选定,固化保存。
 - 将选定源注入 pty 会话环境(GUI 发起的命令与用户自由输入的命令均继承)。
-- github 更新源列表时,重新拉取刷新并自动跟进。
+- github 更新源列表时,重新拉取刷新并自动跟新。
 - 取代原"原子网络功能"与"网络容错":一个统一网络环境子项(原子功能作为总则仍成立,仅网络原子功能并入此)。
 
 #### GitHub 分类网络依赖
@@ -45,16 +45,11 @@
 - **git 只读**(clone / fetch,git 协议拉取):走 gitclone.com(全量只读镜像)。
 - **网页操作 + git push + fork**:需代理网络(完整会话/认证/网页多请求,cdn 前缀与 gitclone 均不覆盖)。fork 属网页操作。
 
-#### 非 GitHub 源(npm registry 等)
-
-- npm registry 属独立联网源,不归入上述 GitHub 分类。同样纳入订阅式多源管理:延迟 + 带宽测试、用户选定、注入 pty 会话。
-- 未命中任何可用的 npm 源时,失败回退到官方 registry 内置地址。
-
 ### 4.2 Node.js 部署
 
-dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
+dsh 硬前置(必须项,缺了 dsh 不可用)。
 
-1. 选源:从网络环境读 node 下载源(见 4.1),取当前 LTS 版本号(默认最新 LTS),失败回退内置版本号。
+1. 选源:从网络环境读 node 下载源,取当前 LTS 版本号(默认最新 LTS),失败回退内置版本号。
 2. 版本选项:默认最新 LTS;旁边标注「DeepSeek Harness 建议使用 22 LTS 与 24 LTS 之间的版本」。
 3. 下载 MSI:用 Rust HTTP GET(reqwest,不依赖系统浏览器/curl),可显示下载进度。
 4. 静默安装:msiexec /quiet,node/npm 默认入 PATH;corepack 装后补执行。
@@ -62,9 +57,9 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 
 ### 4.3 Git 部署
 
-非 dsh 部署前置条件,仅作参考/可选提示项。
+非 dsh 部署前置条件,仅作提示(参考项)。
 
-1. 选源:从网络环境读 git/github 源(见 4.1)。
+1. 选源:从网络环境读 git/github 源。
 2. 探测版本:从 GitHub release API(latest)动态取最新版本号,不硬编码。
 3. 下载:用 Rust HTTP GET,可显示进度。
 4. 静默安装:Git-<ver>-64-bit.exe /VERYSILENT(Inno Setup 参数)。
@@ -90,7 +85,6 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 - 部署与升级:
   - 未安装 → npm 全局安装 `npm i -g @deepseek-ai/dsh`(装进用户级 `%APPDATA%\npm`,免 UAC,自动入 PATH)。
   - 升级只对 npm 全局安装提供(检测到新版本显示升级按钮,`npm i -g @deepseek-ai/dsh@latest`)。
-- **前置/参考分类定义**(统摄四章各模块):下节运行时与终端、Shell、SSH 等配合项,凡属 dsh 硬依赖者标"必须前置",属可选/配套者标"参考可选",各节不再重复解释。
 
 #### 4.4.2 dsh 管理(运行时)
 
@@ -113,24 +107,21 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 
 - 用户数据在 `$DSH_HOME`(默认 `~/.dsh`),与 npm/npx 安装路径(程序本体)相互独立、互不影响。
 - 原生模块:依赖树含 node-pty/koffi 等原生包;平台无预编译产物时走 node-gyp 源码编译。win32-x64 预编译已确认存在。
-- dsh 依赖 pwsh 作为默认 shell,其对 shell 的具体要求与降级策略统一见 4.5(此处不再展开,避免重复)。
+- dsh 在 Windows 上的 shell:dsh 用 pwsh(pwsh-sandbox/本地)栈,Windows 上挂载 pwsh、禁 bash;**不支持 cmd**(所有 agent 都不支持 cmd,功能缺失过多无法补丁);pwsh 优先,可回退 powershell 5.1。
 
 ### 4.5 Shell 部署(pwsh)
 
-- **dsh 对 shell 的要求(集中定义)**:dsh 用 pwsh(pwsh-sandbox/本地)栈,Windows 上**挂载 pwsh、禁 bash**;对 shell 的支持程度为 **`pwsh`(PowerShell 7)> Windows PowerShell 5.1(可回退)> `cmd`(不支持)**。
-  - `pwsh`(PowerShell 7):首选,功能完整。
-  - Windows PowerShell 5.1:作为**回退**,有局限、某些场景可能出错;回退时同样**不支持 cmd**,命令需兼容 PowerShell 5.1 语法,对 5.1 缺失的命令(如 PSStyle 相关)需给出降级路径。
-  - **`cmd` 不支持**(所有 agent 都不支持 cmd,功能缺失过多无法补丁)。
+- dsh 在 Windows 上**优先使用 pwsh**(PowerShell 7);Windows PowerShell 5.1 有局限、可能出错;**cmd 不支持**。
 - **非 dsh 硬前置**:pwsh 是 ssh 部署的配套/被依赖,**硬依赖是 ssh**;仅当 ssh 部署需要时才真正装机。
 - **探测**:列出本机所有 shell(cmd / Windows PowerShell / pwsh);若已有 pwsh,则本步骤无需额外安装二进制。
-- **无 pwsh 才装**:HTTP GET(GitHub CDN 前缀,由网络环境注入 pty,见 4.1)→ 下载官网 MSI(PowerShell-7.x-win-x64.msi)→ msiexec /quiet 静默安装。
-- **安装路径**:安装到官网版常规路径(非 store 版),以符合 OpenSSH server 默认 shell 要求(本地装 ssh server 属下一版本)。
+- **无 pwsh 才装**:HTTP GET(GitHub CDN 前缀,由网络环境注入 pty)→ 下载官网 MSI(PowerShell-7.x-win-x64.msi)→ msiexec /quiet 静默安装。
+- 安装到官网版常规路径(非 store 版),**符合 OpenSSH server 默认 shell 要求**。
 - 状态灯:作为参考/配套项,提示其就绪与否(取决于 ssh 是否需要)。
 
 ### 4.6 SSH 隧道
 
-- **适用范围**:仅指**远程端口转发**(把远程主机的一个端口转发到本机来访问),使用**远端已存在的 ssh server**(客户端行为)。
-- **不包含**:在本地安装 ssh server 属下一版本;**不在本机自装 ssh server** 即可实现端口转发。
+仅指远程端口转发,SSH server 属下一版本。
+
 - 点击该项后的 UI 描述:「把远程主机的一个端口通过 ssh 隧道转发到本机,并在本机使用 localhost:port 来访问」。
 
 #### 表单(分远程/本机)
@@ -144,14 +135,12 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 
 - **左栏(最左,窄、宽度固定)**:子项列表;收起 = 只显示图标 + 绿灯,展开 = 加功能描述;仅做收起/展开切换,不调宽度。
 - **中栏(中,稍宽、可调)**:子项内容(检测状态、执行的操作等)。
-- **右栏(最右,最宽、可调)**:pty 终端(复用第五章通用组件)。
+- **右栏(最右,最宽、可调)**:pty 终端。
 - 中、右两栏宽度可拖动调节。
 
 ## 五、通用组件
 
-- **pty 终端** 作为独立于各功能模块的通用 UI 组件,供各子项复用于命令执行与实时输出。
-- **技术选型**:`xterm.js + portable-pty`,Windows 走 ConPTY,调用系统 shell。
-- 网络选源注入(4.1)、安装执行(4.2/4.3/4.5)、dsh 启动日志(4.4.2)等均通过该组件承载命令与输出;功能模块不各自内置终端。
+- pty 终端作为独立于各功能模块的通用 UI 组件,供各子项复用于命令执行与实时输出。
 
 ## 六、下一版本(agentbase 中 dsh 当前版所无、后续添入)
 
