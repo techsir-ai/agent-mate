@@ -1,6 +1,6 @@
 260816.01
 
-# Agent Mate — 开发设想与路线
+# Agent Mate — 需求文档（v0.01）
 
 > 由 agentbase-setup 与 dsh-easy-up 两个项目合并而来。以 dsh-easy-up 为实现主体(当前版),agentbase-setup 为总纲;agentbase 中有、dsh 中无的功能列入下一版本。
 
