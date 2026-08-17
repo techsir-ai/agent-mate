@@ -1,6 +1,6 @@
-260817.10（此日期是最后修改的时候的日期，使用$data获取，此序号只增加，改一次就加一，永不重置）
+260817.12（此日期是最后修改的时候的日期，使用$data获取，此序号只增加，改一次就加一，永不重置）
 
-# Agent Mate — 需求文档（v0.01）
+# Agent Mate — 需求文档
 
 > 由 agentbase-setup 与 dsh-easy-up 两个项目合并而来。以 dsh-easy-up 为实现主体(当前版),agentbase-setup 为总纲;agentbase 中有、dsh 中无的功能列入下一版本。
 
@@ -15,6 +15,9 @@ Agent 伴侣，为 Agent 准备基础环境，安装部署不同的 Agent ，为
 - 首发 Windows,架构预留三端(三端适配列下一版本)。
 - 终端统一用通用组件(见五)。
 
+---版本分割线1---
+以下内容的版本是v0.01.xxx，而分割线以上的内容不限于某个版本，和版本号无关
+
 ## 三、UI框架
 
 - 三栏总布局，左边栏是功能模块列表和状态显示，中栏是选定的功能模块的细化操作和信息展示，右栏为pty终端，也是信息展示屏，也提供交互式命令行功能；
@@ -23,7 +26,6 @@ Agent 伴侣，为 Agent 准备基础环境，安装部署不同的 Agent ，为
 - 右边栏是xterm.js和pty实现，优先使用pwsh，回退到powershell，最后是cmd，顺序写死，提供按钮切换；当执行功能的时候，如果功能是shell命令，则发送到pty中执行，同时pty还是功能模块操作的信息展示处，默认把屏幕信息记录到log文件中，但也提供交互式命令行功能，考虑按钮切换console和cli屏幕；
 - 顶部预留菜单栏，底部预留状态栏。
 
-**以下版本为v0.01.000开始**
 
 ## 四、功能模块
 
@@ -43,13 +45,22 @@ Agent 伴侣，为 Agent 准备基础环境，安装部署不同的 Agent ，为
 - 这是一个极重要的特色功能，用来让普通用户也可以降低国内网络的影响。
 
 #### 代理设置
-- http/https代理设置和绕过网段。
+- http/https/Socks代理设置和绕过网段。
 
-#### GitHub HTTP GET 类型和 Git clone类型
 
-- **HTTP GET 拉数据**(release 下载 / raw / API / 网页资源):用 GitHub CDN 前缀(ghproxy / ghfast);
-- **git 只读**(clone / fetch,git 协议拉取):走 gitclone.com(全量只读镜像);
-- **网页操作 + git push + fork**:需代理网络(完整会话/认证/网页多请求,cdn 前缀与 gitclone 均不覆盖)。fork 属网页操作。
+#### GitHub 操作，只提供 CDN 前缀和镜像站这一种方式，如果用户自备代理，我们提供设置入口。
+代理方式排序总在最前，源地址访问排序总在第二，延迟＋带宽排序总在最后。也就是如果用户有代理，且代理可达，就总是用代理；如果用户没有代理或者代理不可达，但是源地址访问可达，则总是用源地址；前面的都不成立，则按照 CDN／镜像站的延迟＋带宽排序。
+
+可以执行的操作：
+浏览公开仓库、代码、文档；搜索代码／仓库／用户；查看公开 release 发布页／changelog；
+下载公开 release 二进制／安装包／附件；下载公开仓库 zip／tar 压缩包；下载公开 raw 文件；
+git clone／fetch／pull 公开仓库；API 读公开数据（仓库／issue／release 列表等）。
+
+不可以执行的操作：
+登录／注册账号；fork 仓库；发起／合并／评论 pull request；创建／评论／关闭 issue；
+创建／管理仓库、分支、release、tag；管理设置（token／SSH key／协作者／仓库属性）；
+Star／Watch／Follow；创建／编辑 Gist、GitHub Pages、Actions；API 写操作；git push；
+私有仓库的一切操作（clone／fetch／下载／API 读）。
 
 #### Nodejs安装和npm源
 
@@ -95,7 +106,7 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
     - npm 全局安装 → 目标方式,如云端有新版本则显示升级按钮。
   - 删除与否、是否保留自定义版本,由用户决定。
 - 部署与升级:
-  - 未安装 → npm 全局安装 `npm i -g @deepseek-ai/dsh`(装进用户级 `%APPDATA%\npm`,免 UAC,自动入 PATH)；
+  - 未安装 → npm 全局安装 `npm i -g @deepseek-ai/dsh`(装进用户级 `%APPDATA%\npm`,免 UAC,自动入 PATH)；npm rebuild避开任何可能出现的问题，升级也是一样
   - 升级只对 npm 全局安装提供(检测到新版本显示升级按钮,`npm i -g @deepseek-ai/dsh@latest`)。
 
 #### 4.4.2 dsh 管理(运行时)
@@ -149,7 +160,8 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 - **技术选型**:`xterm.js + portable-pty`；
 - 网络选源注入(4.1)、安装执行(4.2/4.3/4.5)、dsh 启动日志(4.4.2)均经该组件承载命令与输出。
 
-**以下版本从v0.02.xxx开始**
+---版本分割线2---
+以下内容的版本是v0.02.xxx，而分割线以上的内容则是v0.01.xxx的
 
 ## 六、后续版本未经讨论定型版(agentbase 中 dsh 当前版所无、后续添入)
 
