@@ -17,9 +17,11 @@ Thumbs.db
 # 日志与本地产物
 *.log
 
-# 操作日志(本地保留,不同步到仓库)
-dsh-change-log.md
-opencode-change-log.md
+# 操作日志(本地保留,不同步到仓库,所有agent)
+*-change-log.md
 
 # 单文件写执行备份(同目录,序号递增,本地用不上传)
 *.[0-9][0-9][0-9].*
+
+# 测试脚本临时目录(不入库)
+tmp/
