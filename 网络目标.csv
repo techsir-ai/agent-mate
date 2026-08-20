@@ -1,0 +1,32 @@
+网络目标,原站点,访问方式,路径3镜像站,加速器4,推荐源优先级,执行时机,执行方式
+nodejs 安装包,nodejs.org,版本探测+安装包下载,"1.阿里 版本 https://registry.npmmirror.com/-/binary/node/index.json 下载 https://registry.npmmirror.com/-/binary/node/{版本}/node-v{版本}-{平台}.zip
+2.清华 版本 https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/index.json 下载 https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/{版本}/node-v{版本}-{平台}.zip
+3.华为云 版本 https://mirrors.huaweicloud.com/nodejs/index.json 下载 https://mirrors.huaweicloud.com/nodejs/{版本}/node-v{版本}-{平台}.zip
+4.中科大 版本 https://mirrors.ustc.edu.cn/node/index.json 下载 https://mirrors.ustc.edu.cn/node/{版本}/node-v{版本}-{平台}.zip",无（xget 无 node 平台）,1.阿里 2.清华 3.华为云 4.中科大,未装则下载安装，已装则显示版本与升级按钮,内存拦截，改写前缀，交给 pty 执行
+npm 源,registry.npmjs.org,registry,"1.阿里 https://registry.npmmirror.com/{包名}
+2.华为云 https://mirrors.huaweicloud.com/repository/npm/{包名}
+3.中科大 https://npmreg.proxy.ustclug.org/{包名}",https://xget.xi-xu.me/npm/,1.阿里 2.华为云 3.中科大,nodejs安装已经默认安装npm，没有依赖和顺序问题,内存注入环境变量npm_config_registry，交给pty执行
+pnpm,复用npm,复用npm,复用npm,复用npm,复用npm,nodejs安装结束执行corepack即可,复用npm方式
+python 安装包,python.org ,版本探测+安装包下载,"1.阿里 版本 https://registry.npmmirror.com/-/binary/python/ 下载 https://registry.npmmirror.com/-/binary/python/{版本}/python-{版本}-amd64.exe
+2.华为云 版本 https://mirrors.huaweicloud.com/python/ 下载 https://mirrors.huaweicloud.com/python/{版本}/python-{版本}-amd64.exe
+3.中科大 版本 https://mirrors.ustc.edu.cn/python/ 下载 https://mirrors.ustc.edu.cn/python/{版本}/python-{版本}-amd64.exe",无（xget 无官方 python 二进制平台）,1.阿里 2.华为云 3.中科大,未装则下载安装，已装则显示版本与升级按钮,内存拦截，改写前缀，交给 pty 执行
+pip 源,pypi.org,registry,"1.阿里 https://mirrors.aliyun.com/pypi/simple/{包名}
+2.清华 https://pypi.tuna.tsinghua.edu.cn/simple/{包名}
+3.华为云 https://mirrors.huaweicloud.com/repository/pypi/simple/{包名}
+4.中科大 https://mirrors.ustc.edu.cn/pypi/simple/{包名}",https://xget.xi-xu.me/pypi/simple/,1.阿里 2.清华 3.华为云 4.中科大,python安装已默认安装pip，没有依赖和顺序问题,内存注入环境变量PIP_INDEX_URL，交给pty执行
+uv 安装器,astral-sh uv GitHub release,latest安装包下载,"1.cnb.cool https://cnb.cool/astral-sh/uv/-/releases/latest
+2.中科大 https://mirrors.ustc.edu.cn/github-release/astral-sh/uv/LatestRelease/",https://xget.xi-xu.me/gh/astral-sh/uv/,1.cnb.cool 2.中科大,未装则下载安装，已装则显示版本与升级按钮,内存拦截，改写前缀，交给 pty 执行
+uv 安装python,astral-sh,,"1.cnb.cool https://cnb.cool/astral-sh/python-build-standalone/-/releases/latest
+2.中科大 https://mirrors.ustc.edu.cn/github-release/astral-sh/python-build-standalone/LatestRelease/",https://xget.xi-xu.me/gh/astral-sh/python-build-standalone/,1.cnb.cool 2.中科大,依赖uv安装器，如果uv安装器没装就无法运行uv命令，uv安装的python和直接安装的python没有关系，系统path也不冲突，各自独立,内存注入环境变量UV_PYTHON_INSTALL_MIRROR，交给pty执行
+uv 源,PyPI 底层,uv registry,"1.阿里 https://mirrors.aliyun.com/pypi/simple/{包名}
+2.清华 https://pypi.tuna.tsinghua.edu.cn/simple/{包名}
+3.华为云 https://mirrors.huaweicloud.com/repository/pypi/simple/{包名}
+4.中科大 https://mirrors.ustc.edu.cn/pypi/simple/{包名}",https://xget.xi-xu.me/pypi/simple/,1.阿里 2.清华 3.华为云 4.中科大,依赖uv已装，uv的registry，没有依赖和顺序问题,内存注入环境变量UV_INDEX_URL，交给pty执行
+git 安装包,GitHub release,latest安装包下载,"1.阿里 https://registry.npmmirror.com/-/binary/git-for-windows/
+2.清华 https://mirrors.tuna.tsinghua.edu.cn/github-release/git-for-windows/git/LatestRelease/
+3.华为云 https://mirrors.huaweicloud.com/git-for-windows/
+4.中科大 https://mirrors.ustc.edu.cn/github-release/git-for-windows/git/LatestRelease/",https://xget.xi-xu.me/gh/git-for-windows/git/,1.阿里 2.清华 3.华为云 4.中科大,未装则下载安装，已装则显示版本与升级按钮,内存拦截，改写前缀，交给 pty 执行
+git clone fetch pull,github.com,git read 协议,无,https://xget.xi-xu.me/gh/（git insteadOf）,github无镜像站，只能代理或cdn加速,依赖git已装，否则不能运行,内存注入环境变量GIT_CONFIG，交给pty执行
+git push,github.com,git write 协议,无,https://xget.xi-xu.me/gh/（git insteadOf，push 也走）,github无镜像站，只能代理，写操作更复杂,依赖git已装，否则不能运行,内存注入环境变量GIT_CONFIG，交给pty执行
+github http get,github.com raw/release/api,http get,无,https://xget.xi-xu.me/gh/（前缀加 GitHub 路径）,github无镜像站，只能代理或cdn加速,http get 无依赖和顺序问题,内存拦截，改写前缀，交给 pty 执行
+pwsh 安装包,github.com PowerShell-7 release,download-release 预编译,1.清华 https://mirrors.tuna.tsinghua.edu.cn/github-release/PowerShell/PowerShell/LatestRelease/,https://xget.xi-xu.me/gh/PowerShell/PowerShell/,1.清华,未装则下载安装，已装则显示版本与升级按钮,内存拦截，改写前缀，交给 pty 执行

@@ -48,31 +48,11 @@ Agent 伴侣，是让为了让国内普通小白用户可以方便快捷的使�
 - 下面所有需要使用网络的均默认使用本项设置，不再赘述；
 - 这是一个极重要的特色功能，用来让普通用户也可以降低国内网络的影响。
 
-#### 代理设置
-- http/https/Socks代理设置和绕过网段。
+####
+网络目标源表见 `网络目标.csv`（单一事实来源，改源目标、镜像/加速器、执行时机、执行方式均以该表为准）。
 
+改源手段分类（供需求表述统一）：A1 文本层兜底（绝对路径命令）/ A2 PATH 包装器（拦截 curl/wget）/ B1 环境变量注入（npm/pip/uv/git 源）/ B2 解释器钩子（覆盖 cmdlet），相互配合实现内存拦截，不落盘不影响操作系统。
 
-#### GitHub 操作，只提供 CDN 前缀和镜像站这一种方式，如果用户自备代理，我们提供设置入口。
-代理方式排序总在最前，源地址访问排序总在第二，延迟＋带宽排序总在最后。也就是如果用户有代理，且代理可达，就总是用代理；如果用户没有代理或者代理不可达，但是源地址访问可达，则总是用源地址；前面的都不成立，则按照 CDN／镜像站的延迟＋带宽排序。
-
-可以执行的操作：
-浏览公开仓库、代码、文档；搜索代码／仓库／用户；查看公开 release 发布页／changelog；
-下载公开 release 二进制／安装包／附件；下载公开仓库 zip／tar 压缩包；下载公开 raw 文件；
-git clone／fetch／pull 公开仓库；API 读公开数据（仓库／issue／release 列表等）。
-
-不可以执行的操作：
-登录／注册账号；fork 仓库；发起／合并／评论 pull request；创建／评论／关闭 issue；
-创建／管理仓库、分支、release、tag；管理设置（token／SSH key／协作者／仓库属性）；
-Star／Watch／Follow；创建／编辑 Gist、GitHub Pages、Actions；API 写操作；git push；
-私有仓库的一切操作（clone／fetch／下载／API 读）。
-
-#### Nodejs安装和npm源
-
-- nodejs安装url，native和mirror；
-- npm registry 属独立联网源,同样纳入订阅式多源管理(延迟 + 带宽测试、用户选定、注入 pty 会话)。
-
-#### 后期其他类型
-- 后期考虑其他类型，比如python安装url、pip源等，以此类推，总之和开发以及agent有关的，都可以提供。
 
 ### 4.2 Node.js 部署
 
@@ -84,7 +64,11 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 4. 静默安装:msiexec /quiet,node/npm 默认入 PATH;之后执行corepack enable；
 5. 验证:node -v / npm -v。
 
-### 4.3 Git 部署
+### 4.3 Python 部署
+
+### 4.4 UV 部署
+
+### 4.5 Git 部署
 
 非 dsh 部署前置条件,仅作参考/可选提示项。
 
@@ -93,6 +77,50 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 3. 下载:用 Rust HTTP GET,可显示进度；
 4. 安装:Git-<ver>-64-bit.exe /VERYSILENT(Inno Setup 参数)；
 5. 验证:git --version。
+
+### 4.6 Shell 部署(pwsh)
+
+- **dsh支持程度**:`pwsh`(PowerShell 7,首选)> Windows PowerShell 5.1(可回退)> `cmd`(不支持)；
+  - pwsh:功能完整；
+  - Windows PowerShell 5.1:作回退,有局限、可能出错;不支持 cmd,命令需兼容 5.1 语法。
+- **探测**:列出本机所有 shell(cmd / Windows PowerShell / pwsh);已有 pwsh 则无需再装；
+- **无 pwsh 时显示安装按钮**:HTTP GET→ 下载官网 MSI(PowerShell-7.最新版-win-x64.msi)→ msiexec /quiet 静默安装；
+- **安装路径**:官网版常规路径(非 store 版),符合 OpenSSH server 默认 shell 要求。
+
+### 4.7 SSH 隧道
+
+- **范围**:仅指远程端口转发(客户端转发远端已存在的 ssh server 端口到本机访问),不在本机自装 ssh server(后者属下一版本)；
+- 点击该项后的 UI 描述:「把远程主机的一个端口通过 ssh 隧道转发到本机,并在本机使用 localhost:port 来访问」。
+
+#### 表单(分远程/本机)
+
+- **远程**:远程主机 IP、远程主机 SSH server 端口、远程主机用户名、远程主机密码 / 远程主机私钥、远程服务端口；
+- **本机**:本机端口(仅一项)；
+- **连接控制**:点击「建立连接」;显示持续时间、状态、延迟、已用流量;后台运行,不占用 pty。可点击复制隧道本地ip：port方便粘贴；
+- **保存与认证**:填写内容可保存;认证方式可选密码 / 指定私钥 / 系统私钥;可为远程主机部署公钥(部署后免密)。密钥可指定，也有按钮生成，默认两种ed25519和rsa，默认使用id_ed25519和.pub、id_rsa和.pub文件名，默认两个公钥加入authorized_keys文件，也就是默认2个私钥/3个公钥文件；
+- 可保存多项纪录，可同时建立多条隧道，每条隧道状态单独显示。
+
+
+## 五、通用组件
+
+- **pty 终端**:独立于各功能模块的通用 UI 组件,供各子项复用于命令执行与实时输出；
+- **技术选型**:`xterm.js + portable-pty`；
+- 网络选源注入(4.1)、安装执行(4.2/4.3/4.5)、dsh 启动日志(4.4.2)均经该组件承载命令与输出。
+
+---版本分割线2---
+以下内容的版本是v0.02.xxx，而分割线以上的内容则是v0.01.xxx的
+
+## 六、后续版本未经讨论定型版(agentbase 中 dsh 当前版所无、后续添入)
+
+- Python 部署(开发三件套补齐)。
+- OpenSSH server 部署(含本机/远程部署公私钥、远程执行命令)。
+- WSL 部署。
+- 多 agent 部署(hermes / opencode / pi 等)。
+- Windows Terminal(已含 pwsh 部署,其余窗口环境)补充。
+- 检测 git bash。
+- 三端适配(macOS / Linux)。
+- 产品双模式 B(生成可复制命令清单,脱机执行)。
+- 受众留存与 SiteLink/对外协同策略。
 
 ### 4.4 dsh
 
@@ -134,50 +162,6 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 - 用户数据在 `$DSH_HOME`(默认 `~/.dsh`),与 npm/npx 安装路径(程序本体)相互独立、互不影响；
 - 原生模块:依赖树含 node-pty/koffi 等原生包;平台无预编译产物时走 node-gyp 源码编译。win32-x64 预编译已确认存在；
 - dsh 依赖 pwsh 作为默认 shell(要求见 4.5)。
-
-### 4.5 Shell 部署(pwsh)
-
-- **dsh支持程度**:`pwsh`(PowerShell 7,首选)> Windows PowerShell 5.1(可回退)> `cmd`(不支持)；
-  - pwsh:功能完整；
-  - Windows PowerShell 5.1:作回退,有局限、可能出错;不支持 cmd,命令需兼容 5.1 语法。
-- **探测**:列出本机所有 shell(cmd / Windows PowerShell / pwsh);已有 pwsh 则无需再装；
-- **无 pwsh 时显示安装按钮**:HTTP GET→ 下载官网 MSI(PowerShell-7.最新版-win-x64.msi)→ msiexec /quiet 静默安装；
-- **安装路径**:官网版常规路径(非 store 版),符合 OpenSSH server 默认 shell 要求。
-
-### 4.6 SSH 隧道
-
-- **范围**:仅指远程端口转发(客户端转发远端已存在的 ssh server 端口到本机访问),不在本机自装 ssh server(后者属下一版本)；
-- 点击该项后的 UI 描述:「把远程主机的一个端口通过 ssh 隧道转发到本机,并在本机使用 localhost:port 来访问」。
-
-#### 表单(分远程/本机)
-
-- **远程**:远程主机 IP、远程主机 SSH server 端口、远程主机用户名、远程主机密码 / 远程主机私钥、远程服务端口；
-- **本机**:本机端口(仅一项)；
-- **连接控制**:点击「建立连接」;显示持续时间、状态、延迟、已用流量;后台运行,不占用 pty。可点击复制隧道本地ip：port方便粘贴；
-- **保存与认证**:填写内容可保存;认证方式可选密码 / 指定私钥 / 系统私钥;可为远程主机部署公钥(部署后免密)。密钥可指定，也有按钮生成，默认两种ed25519和rsa，默认使用id_ed25519和.pub、id_rsa和.pub文件名，默认两个公钥加入authorized_keys文件，也就是默认2个私钥/3个公钥文件；
-- 可保存多项纪录，可同时建立多条隧道，每条隧道状态单独显示。
-
-
-## 五、通用组件
-
-- **pty 终端**:独立于各功能模块的通用 UI 组件,供各子项复用于命令执行与实时输出；
-- **技术选型**:`xterm.js + portable-pty`；
-- 网络选源注入(4.1)、安装执行(4.2/4.3/4.5)、dsh 启动日志(4.4.2)均经该组件承载命令与输出。
-
----版本分割线2---
-以下内容的版本是v0.02.xxx，而分割线以上的内容则是v0.01.xxx的
-
-## 六、后续版本未经讨论定型版(agentbase 中 dsh 当前版所无、后续添入)
-
-- Python 部署(开发三件套补齐)。
-- OpenSSH server 部署(含本机/远程部署公私钥、远程执行命令)。
-- WSL 部署。
-- 多 agent 部署(hermes / opencode / pi 等)。
-- Windows Terminal(已含 pwsh 部署,其余窗口环境)补充。
-- 检测 git bash。
-- 三端适配(macOS / Linux)。
-- 产品双模式 B(生成可复制命令清单,脱机执行)。
-- 受众留存与 SiteLink/对外协同策略。
 
 ## dsh 部署需要考虑的问题：
 PS C:\Users\changwei> npm install -g @deepseek-ai/dsh@0.1.0-rc.8
