@@ -178,3 +178,45 @@ dsh 硬前置(红灯必处理,缺了 dsh 不可用)。
 - 三端适配(macOS / Linux)。
 - 产品双模式 B(生成可复制命令清单,脱机执行)。
 - 受众留存与 SiteLink/对外协同策略。
+
+## dsh 部署需要考虑的问题：
+PS C:\Users\changwei> npm install -g @deepseek-ai/dsh@0.1.0-rc.8
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 1 package, and changed 449 packages in 1m
+
+64 packages are looking for funding
+  run `npm fund` for details
+npm warn allow-scripts 5 packages have install scripts not yet covered by allowScripts:
+npm warn allow-scripts   @deepseek-ai/dsh-subprocess-local@0.1.0-rc.8 (postinstall: node scripts/ensure-spawn-helper.mjs)
+npm warn allow-scripts   koffi@3.1.5 (install: node ./cnoke.cjs -P . -D src/koffi --prebuild --release)
+npm warn allow-scripts   node-pty@1.2.0-beta.15 (install: node scripts/prebuild.js || node-gyp rebuild; postinstall: node scripts/post-install.js)
+npm warn allow-scripts   @google/genai@1.52.0 (preinstall: echo 'preinstall: no-op')
+npm warn allow-scripts   protobufjs@7.6.5 (postinstall: node scripts/postinstall)
+npm warn allow-scripts
+npm warn allow-scripts Run `npm install -g --allow-scripts=@deepseek-ai/dsh-subprocess-local,koffi,node-pty,@google/genai,protobufjs` to allow these scripts once, or `npm config set allow-scripts=@deepseek-ai/dsh-subprocess-local,koffi,node-pty,@google/genai,protobufjs --location=user` to allow them for all global installs.
+PS C:\Users\changwei> dsh --version
+0.1.0-rc.8
+PS C:\Users\changwei> npm install -g --allow-scripts=@deepseek-ai/dsh-subprocess-local,koffi,node-pty,@google/genai,protobufjs
+npm error Cannot destructure property 'name' of '.for' as it is undefined.
+npm error A complete log of this run can be found in: C:\Users\changwei\AppData\Local\npm-cache\_logs\2026-08-20T05_04_32_067Z-debug-0.log
+PS C:\Users\changwei> dsh web
+dsh web: http://127.0.0.1:3080
+dsh web: opening the default browser; pass --no-open to disable
+PS C:\Users\changwei>
+PS C:\Users\changwei>
+PS C:\Users\changwei>
+PS C:\Users\changwei> npm config set allow-scripts=@deepseek-ai/dsh-subprocess-local,koffi,node-pty,@google/genai,protobufjs --location=user
+PS C:\Users\changwei> npm install -g @deepseek-ai/dsh@0.1.0-rc.8
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+changed 450 packages in 1m
+
+64 packages are looking for funding
+  run `npm fund` for details
+PS C:\Users\changwei> dsh --version
+0.1.0-rc.8
+PS C:\Users\changwei> dsh web
+dsh web: http://127.0.0.1:3080
+dsh web: opening the default browser; pass --no-open to disable
+
